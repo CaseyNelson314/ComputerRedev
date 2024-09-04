@@ -5,28 +5,30 @@
 //
 
 // カウント値: 4bit
-// 命令メモリ: 8bit * 2^4
+// 命令メモリ: 10bit * 2^4
 
 constexpr int COUNT_IN_PINS[] = { 0, 1, 2, 3 };
-constexpr int MEM_OUT_PINS[] = { 28, 27, 26, 22, 21, 20, 19, 18 };
+constexpr int MEM_OUT_PINS[] = { 28, 27, 26, 22, 21, 20, 19, 18, 17, 16 };
 
-constexpr uint8_t INST_MEM[16] = { 
-    0x00,
-    0x01,
-    0x02,
-    0x03,
-    0x04,
-    0x05,
-    0x06,
-    0x07,
-    0x08,
-    0x09,
-    0x0a,
-    0x0b,
-    0x0c,
-    0x0d,
-    0x0e,
-    0x0f,
+constexpr uint16_t INST_MEM[16] = {
+    0b00'0000'0000,
+    0b00'0000'0001,
+    0b00'0000'0010,
+    0b00'0000'0011,
+    0b00'0000'0100,
+    0b00'0000'0101,
+    0b00'0000'0110,
+
+    0b00'0000'1000,
+
+    0b00'0000'0000,
+    0b00'0000'0000,
+    0b00'0000'0000,
+    0b00'0000'0000,
+    0b00'0000'0000,
+    0b00'0000'0000,
+    0b00'0000'0000,
+    0b00'0000'0000,
 };
 
 void setup()
@@ -54,7 +56,7 @@ void loop()
 
     // 命令メモリ内の値を出力
     {
-        for (int i = 0; i < 8; ++i)
+        for (int i = 0; i < 10; ++i)
             digitalWrite(MEM_OUT_PINS[i], bitRead(INST_MEM[instAddress], i));
     }
     
