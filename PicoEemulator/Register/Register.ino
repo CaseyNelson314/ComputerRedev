@@ -32,18 +32,34 @@ public:
             pinMode(pin, OUTPUT);
     }
 
+
+    // プログラムカウンタ用
+    void countup()
+    {
+        ++value;
+    }
+
+    void putValue()
+    {
+        for (uint i = 0; i < setPins.size(); ++i)
+        {
+            digitalWrite(outPins[i], bitRead(value, i));
+        }
+    }
+
     void onClockFall()
     {
         for (uint i = 0; i < setPins.size(); ++i)
         {
-            digitalWrite(outPins[i], digitalRead(setPins[i]));
+            bitWrite(value, i, digitalRead(setPins[i]));
         }
     }
 };
 
 Register regs[] {
-    { { 1, 2, 3, 4 }, { 11, 10, 9, 8 } },
     { { 5, 6, 7, 8 }, { 15, 14, 13, 12 } },
+    { { 1, 2, 3, 4 }, { 11, 10, 9, 8 } },
+    { { 1, 2, 3, 4 }, { 11, 10, 9, 8 } }, // PC
 };
 
 void setup()
@@ -62,5 +78,11 @@ void loop()
             reg.onClockFall();
         Serial.read();
     }
+
+
+
+    // regs[0].show(0b1101);
+    // regs[1].show(0b0001);
+
     digitalWrite(LED_BUILTIN, millis() % 500 < 100);
 }

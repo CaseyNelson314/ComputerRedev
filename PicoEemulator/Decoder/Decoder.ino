@@ -6,7 +6,7 @@
 
 constexpr uint8_t INST_IN_PINS[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
-constexpr uint8_t ALU_SELECT_OUT_PINS[] = { 28, 27, 26 };
+constexpr uint8_t ALU_SELECT_OUT_PINS[] = { 27, 26, 22 };
 constexpr uint8_t MUX_RHS_SELECT_OUT_PINS[] = { 19, 18 };
 constexpr uint8_t MUX_LHS_SELECT_OUT_PINS[] = { 17, 16 };
 constexpr uint8_t DEMUX_SELECT_OUT_PINS[] = { 21, 20 };
@@ -18,6 +18,17 @@ void setup()
 
     for (uint8_t pin : INST_IN_PINS)
         pinMode(pin, INPUT);
+
+    for (uint8_t pin : ALU_SELECT_OUT_PINS)
+        pinMode(pin, OUTPUT);
+    for (uint8_t pin : MUX_RHS_SELECT_OUT_PINS)
+        pinMode(pin, OUTPUT);
+    for (uint8_t pin : MUX_LHS_SELECT_OUT_PINS)
+        pinMode(pin, OUTPUT);
+    for (uint8_t pin : DEMUX_SELECT_OUT_PINS)
+        pinMode(pin, OUTPUT);
+    for (uint8_t pin : IMM_OUT_PINS)
+        pinMode(pin, OUTPUT);
 
     pinMode(LED_BUILTIN, OUTPUT);
 }
@@ -41,17 +52,18 @@ void loop()
     uint8_t opecode = inst & 0b1111;
 
     // 4bit目以降が0のとき演算装置を使用
-    if ((opecode & 0b1000 >> 3) == 0)
+    if (((opecode & 0b1000) >> 3) == 0)
     {
-
         // [rd(2)] [rs1(2)] [rs2(2)] [opecode(4)]
 
-        uint8_t muxLhsSelect = inst & 0b00'1100'0000 >> 6; /* rs1 */
-        uint8_t muxRhsSelect = inst & 0b00'0011'0000 >> 4; /* rs2 */
+        uint8_t muxLhsSelect = (inst & 0b00'1100'0000) >> 6; /* rs1 */
+        uint8_t muxRhsSelect = (inst & 0b00'0011'0000) >> 4; /* rs2 */
         
-        uint8_t aluSelect    = inst & 0b111;
+        uint8_t aluSelect    = (inst & 0b111);
 
-        uint8_t demuxSelect  = inst & 0b11'0000'0000 >> 8; /* rd  */
+        uint8_t demuxSelect  = (inst & 0b11'0000'0000) >> 8; /* rd  */
+
+        Serial.printf("[math] rd=%d, rs1=%d, rs2=%d ", demuxSelect, muxLhsSelect, muxRhsSelect);
 
         setMuxSelect(muxLhsSelect, MUX_LHS_SELECT_OUT_PINS, sizeof MUX_LHS_SELECT_OUT_PINS);
         setMuxSelect(muxRhsSelect, MUX_RHS_SELECT_OUT_PINS, sizeof MUX_RHS_SELECT_OUT_PINS);
@@ -64,8 +76,8 @@ void loop()
     // 即値セット
     if (opecode == 0b1000)
     {
-        uint8_t imm         = inst & 0b00'1111'0000 >> 4;
-        uint8_t demuxSelect = inst & 0b11'0000'0000 >> 8; /* rd  */
+        uint8_t imm         = (inst & 0b00'1111'0000) >> 4;
+        uint8_t demuxSelect = (inst & 0b11'0000'0000) >> 8; /* rd  */
 
         setMuxSelect(demuxSelect , DEMUX_SELECT_OUT_PINS  , sizeof DEMUX_SELECT_OUT_PINS  );
 
@@ -73,7 +85,6 @@ void loop()
             digitalWrite(IMM_OUT_PINS[i], bitRead(imm, i));
     }
 
-    
     {
         digitalWrite(LED_BUILTIN, millis() % 500 < 100);
     }
